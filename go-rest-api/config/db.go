@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql" // <- ini WAJIB
 )
 
 func ConnectDB() (*sql.DB, error) {
@@ -14,5 +16,15 @@ func ConnectDB() (*sql.DB, error) {
 		os.Getenv("DB_PORT"),
 		os.Getenv("DB_NAME"),
 	)
-	return sql.Open("mysql", dsn)
+
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
