@@ -7,11 +7,17 @@ import (
 
 	"go-rest-api/internal"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
 func StartServer() {
 	_ = godotenv.Load()
+	ginMode := os.Getenv("GIN_MODE")
+	if ginMode == "" {
+		ginMode = gin.DebugMode // fallback
+	}
+	gin.SetMode(ginMode)
 
 	db, err := ConnectDB()
 	if err != nil {
