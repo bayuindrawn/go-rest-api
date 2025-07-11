@@ -1,0 +1,18 @@
+# Golang
+main
+*.exe
+*.out
+*.test
+*.log
+
+# Vendor (jika tidak ingin di-push)
+vendor/
+
+# Docker
+*.env
+docker-compose.override.yml
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
