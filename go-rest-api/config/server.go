@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"go-rest-api/internal"
@@ -27,6 +26,7 @@ func StartServer() {
 	if port == "" {
 		port = "8080"
 	}
-	fmt.Println("Server running on port " + port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+
+	fmt.Println("Server running at http://localhost:" + port)
+	log.Fatal(router.Run(":" + port))
 }

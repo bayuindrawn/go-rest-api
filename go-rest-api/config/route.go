@@ -1,20 +1,23 @@
 package config
 
 import (
-	"net/http"
-
 	"go-rest-api/internal"
 	"go-rest-api/internal/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(app *internal.App) *http.ServeMux {
-	mux := http.NewServeMux()
+func SetupRoutes(app *internal.App) *gin.Engine {
+	r := gin.Default()
 
-	// Public routes
-	mux.HandleFunc("/login", app.Handler.Login)
+	// Public route
+	r.GET("/login", app.Handler.Login)
 
-	// Protected routes
-	mux.Handle("/employees", middleware.JWTAuth(http.HandlerFunc(app.Handler.GetEmployees)))
+	// Protected group
+	auth := r.Group("/", middleware.JWTAuth())
+	{
+		auth.GET("/employees", app.Handler.GetEmployees)
+	}
 
-	return mux
+	return r
 }

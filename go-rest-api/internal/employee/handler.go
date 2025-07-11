@@ -1,11 +1,11 @@
 package employee
 
 import (
-	"encoding/json"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -13,25 +13,16 @@ type Handler struct {
 	service Service
 }
 
-func NewHandler(service Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(s Service) *Handler {
+	return &Handler{service: s}
 }
 
-func (h *Handler) GetEmployees(w http.ResponseWriter, r *http.Request) {
-	employees, err := h.service.GetEmployees()
-	if err != nil {
-		http.Error(w, "Failed to get employees", http.StatusInternalServerError)
-		return
-	}
-	json.NewEncoder(w).Encode(employees)
-}
-
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
-	password := r.URL.Query().Get("password")
+func (h *Handler) Login(c *gin.Context) {
+	username := c.Query("username")
+	password := c.Query("password")
 
 	if username != "admin" || password != "1234" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
@@ -44,9 +35,18 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	secret := os.Getenv("JWT_SECRET")
 	tokenStr, err := token.SignedString([]byte(secret))
 	if err != nil {
-		http.Error(w, "Failed to sign token", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Token generation failed"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"token": tokenStr})
+	c.JSON(http.StatusOK, gin.H{"token": tokenStr})
+}
+
+func (h *Handler) GetEmployees(c *gin.Context) {
+	employees, err := h.service.GetEmployees()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get employees"})
+		return
+	}
+	c.JSON(http.StatusOK, employees)
 }

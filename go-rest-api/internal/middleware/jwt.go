@@ -1,40 +1,35 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type contextKey string
-
-const UserKey contextKey = "user"
-
-func JWTAuth(next http.Handler) http.Handler {
+func JWTAuth() gin.HandlerFunc {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 			return secret, nil
 		})
 
 		if err != nil || !token.Valid {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserKey, token.Claims)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+		c.Set("user", token.Claims)
+		c.Next()
+	}
 }
