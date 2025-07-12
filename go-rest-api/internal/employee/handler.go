@@ -93,3 +93,13 @@ func (h *Handler) GetEmployees(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, employees)
 }
+
+func (h *Handler) GetCounter(c *gin.Context) {
+	h.service.IncrementCounter()
+	count := h.service.GetCounter()
+
+	c.JSON(200, gin.H{
+		"message": "Counter accessed",
+		"count":   count,
+	})
+}

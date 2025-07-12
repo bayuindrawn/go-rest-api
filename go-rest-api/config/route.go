@@ -50,6 +50,7 @@ func SetupRoutes(app *internal.App) *gin.Engine {
 	auth.Use(authLimiter)
 	{
 		auth.GET("/employees", app.Handler.GetEmployees)
+		auth.GET("/counter", app.Handler.GetCounter)
 	}
 
 	return r
