@@ -42,15 +42,16 @@ func SetupRoutes(app *internal.App) *gin.Engine {
 	limiter := tollbooth.NewLimiter(5, nil)
 	authLimiter := tollbooth_gin.LimitHandler(limiter)
 
-	r.POST("/login", authLimiter, app.Handler.Login)
-	r.POST("/refresh", authLimiter, app.Handler.Refresh)
+	r.POST("/login", authLimiter, app.Employee.Login)
+	r.POST("/refresh", authLimiter, app.Employee.Refresh)
 
 	auth := r.Group("/")
 	auth.Use(middleware.JWTAuth())
 	auth.Use(authLimiter)
 	{
-		auth.GET("/employees", app.Handler.GetEmployees)
-		auth.GET("/counter", app.Handler.GetCounter)
+		auth.GET("/employees", app.Employee.GetEmployees)
+		auth.GET("/counter", app.Employee.GetCounter)
+		auth.GET("/pokemon", app.Pokemon.GetPokemons)
 	}
 
 	return r
